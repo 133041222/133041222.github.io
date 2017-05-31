@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="jquery.js"></script>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    html,body{
+        width: 100%;
+        height: 100%;
+
+    }
+    .zhuozi{
+        width: 690px;
+        height:650px;
+        margin: 10px auto ;
+        position: relative;
+        background:#e9e9e9;
+        background:url("images/11.jpg");
+    }
+     .pai{
+        width: 90px;
+        height: 130px;
+        position: absolute;
+        left:300px;
+        top:0;
+        border:1px solid  rgba(0,0,0,0);
+        background-size:90px 133px;
+        opacity:0;
+    }
+    .active{
+        border-color:  #0085d0;
+    }
+    .zj{
+        width: 100px;
+        height: 40px;
+        background: #0085d0;
+        position: absolute;
+        bottom:80px;
+        left: 43%;
+        text-align: center;
+        line-height: 40px;
+        color: #fff;
+        font-size: 22px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .yj{
+        width: 100px;
+        height: 40px;
+        background:red;
+        position: absolute;
+        bottom:30px;
+        left: 43%;
+        text-align: center;
+        line-height: 40px;
+        color: #fff;
+        font-size: 22px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+</style>
+
+
+
+<body>
+ <div class="zhuozi">
+     <div class="zj">&gt;</div>
+     <div class="yj">&lt;</div>
+ </div>
+</body>
+</html>
+<script>
+$(function(){
+    //产生52张扑克牌   不能重复   四种花色  1-13
+    //一张一个对象    花色  数字
+    //[{huase:'h',shuzi:5},{huase:'s',shuzi:6}]
+    let zj=$('.zj');
+    let yj=$('.yj')
+    let poke=[] //保存产生的扑克牌
+    let color=['h','s','d','c'];
+    let biao={};//判断表里面有没有这个数字的属性   记录产生过的牌
+    for(let i=0;i<52;i++){
+        let huase=color[Math.floor(Math.random()*4)];  //花色
+        let shuzi=Math.floor(Math.random()*13+1);  //数字
+        while(biao[huase+'_'+shuzi]){
+            huase=color[Math.floor(Math.random()*4)];
+            shuzi=Math.floor(Math.random()*13+1);
+        }
+        biao[huase+'_'+shuzi]=true;
+        poke.push({huase,shuzi});  //若果没有就推进去
+    }
+    let index=0;//记录当前发的是第几张
+    for(let i=0;i<7;i++){
+        for(let j=0;j<=i;j++){
+           let item=poke[index];
+            index++;
+            let src="url(images/"+item.huase+item.shuzi+".png)";
+            $('<div>').addClass('pai').css('backgroundImage',src).data('num',item.shuzi).prop('id',i+'_'+j).delay(60*index).animate({left:300-i*50+100*j,top:60*i,opacity:1})
+                .appendTo('.zhuozi');
+        }
+    }
+    for(;index<poke.length;index++){
+        let item=poke[index];
+        let src="url(images/"+item.huase+item.shuzi+".png)";
+        $('<div>').addClass('pai zuo').css('backgroundImage',src).data('num',item.shuzi).delay(30*index).animate({left:100,top:510,opacity:1})
+            .appendTo('.zhuozi');
+    }
+    let first=null;
+    $('.pai').click(function(){
+        let coords=$(this).prop('id').split('_');
+        let ele=$(`#${parseInt(coords[0])+1}_${parseInt(coords[1])+1}`);
+        let ele1=$(`#${parseInt(coords[0])+1}_${parseInt(coords[1])}`);
+        if(ele.length==1||ele1.length==1){
+            return;
+        }
+        $(this).toggleClass('active');
+        if($(this).hasClass('active')){
+            $(this).animate({top:'-=20'})
+        }else{
+            $(this).animate({top:'+=20'})
+        }
+
+        if(!first){
+            first=this;//选中第一张
+            let sum=$(first).data('num')
+            if(sum==13){
+                $('.active').animate({left:600,top:0}).queue(function () {
+                    $(this).remove();
+                    first=null;
+                });
+            }
+        }else{
+            let sum=$(first).data('num')+$(this).data('num');
+            if(sum==13){
+                $('.active').animate({left:600,top:0}).queue(function () {
+                    $(this).remove()
+                });
+            }else{
+                $('.active').animate({top:"+=20"}).removeClass('active')
+
+            }
+            first=null;
+        }
+    })
+    let Zindex=1;
+        zj.click(function(){
+        Zindex++;
+        $('.zuo:last').removeClass('zuo').addClass('you').css('zIndex',Zindex).animate({left:'+=400'})
+    })
+    yj.click(function(){
+       let you=$('.you');
+       if(you.length==0){
+           return
+       }
+       for(let i=you.length-1;i>=0;i-- ){
+           $(you[i]).delay(100*i).animate({left:'-=400'},function(){
+               $(this).css('zIndex',0)
+           }).removeClass('you').addClass('zuo')
+       }
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+})
+
+</script>
